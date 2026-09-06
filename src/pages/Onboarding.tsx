@@ -55,7 +55,13 @@ export function Onboarding() {
           <TextField label="Nome *" value={nome} onChange={setNome} />
           <TextField label="E-mail *" type="email" value={email} onChange={setEmail} />
           <TextField label="Instituição (opcional)" value={instituicao} onChange={setInstituicao} />
-          <TextField label="Curso *" value={curso} onChange={setCurso} />
+          <TextField
+            label="Curso *"
+            value={curso}
+            onChange={setCurso}
+            help="O curso que você está fazendo (ex: Licenciatura em História, Psicologia, Engenharia Civil)."
+            placeholder="Ex: Pedagogia"
+          />
           <SelectField label="Nível acadêmico *" value={nivel} onChange={(v) => setNivel(v as NivelAcademico)} opcoes={NIVEIS} />
           <TextField label="Área do conhecimento *" value={area} onChange={setArea} />
           <TextField label="Título provisório da pesquisa *" value={titulo} onChange={setTitulo} />

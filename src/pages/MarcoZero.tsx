@@ -145,11 +145,11 @@ export function MarcoZero() {
             { valor: 'nao_sei', rotulo: 'Não sei' },
           ]}
         />
-        <p className="help-text" style={{ marginTop: 10 }}>
-          Importante: este sistema não decide se sua pesquisa exige ou não aprovação ética — isso deve ser
-          verificado junto às normas da sua instituição. Abaixo estão exemplos comuns; marque os que podem
-          se aplicar ao seu caso.
-        </p>
+        <div className="alert warning" style={{ marginTop: 10 }}>
+          <strong>IMPORTANTE:</strong> verifique isso com o seu orientador. Este sistema não decide se sua
+          pesquisa exige ou não aprovação ética — isso deve ser confirmado junto ao seu orientador e às
+          normas da sua instituição. Abaixo estão exemplos comuns; marque os que podem se aplicar ao seu caso.
+        </div>
         <div className="stack" style={{ marginTop: 10 }}>
           {exigenciasEticasComuns.map((item) => (
             <label key={item} style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>

@@ -1,6 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer } from 'react';
 import type { ResearchProject } from '../types/project';
-import { marcarRevisaoPorMudancaDePergunta } from '../rules/coherence';
 
 const STORAGE_KEY = 'bussola.researchProject.v1';
 
@@ -27,8 +26,6 @@ interface StoreContextValue {
   projeto: ResearchProject | null;
   definirProjeto: (p: ResearchProject) => void;
   atualizar: (fn: (p: ResearchProject) => ResearchProject) => void;
-  /** Atalho para mudanças que exigem nova verificação de coerência (Regra 8). */
-  atualizarComRevisao: (fn: (p: ResearchProject) => ResearchProject) => void;
   resetar: () => void;
 }
 
@@ -56,16 +53,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   const definirProjeto = useCallback((p: ResearchProject) => dispatch({ type: 'CARREGAR', payload: p }), []);
   const atualizar = useCallback((fn: (p: ResearchProject) => ResearchProject) => dispatch({ type: 'ATUALIZAR', payload: fn }), []);
-  const atualizarComRevisao = useCallback(
-    (fn: (p: ResearchProject) => ResearchProject) =>
-      dispatch({ type: 'ATUALIZAR', payload: (p) => marcarRevisaoPorMudancaDePergunta(fn(p)) }),
-    [],
-  );
   const resetar = useCallback(() => dispatch({ type: 'RESETAR' }), []);
 
   const value = useMemo(
-    () => ({ projeto, definirProjeto, atualizar, atualizarComRevisao, resetar }),
-    [projeto, definirProjeto, atualizar, atualizarComRevisao, resetar],
+    () => ({ projeto, definirProjeto, atualizar, resetar }),
+    [projeto, definirProjeto, atualizar, resetar],
   );
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;

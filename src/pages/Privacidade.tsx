@@ -12,6 +12,16 @@ export function Privacidade() {
       </div>
 
       <div className="card">
+        <h2 style={{ fontSize: '1.05rem' }}>Sua ideia é sua</h2>
+        <p>
+          A sua pesquisa, suas ideias e suas decisões <strong>não são compartilhadas com outros usuários,
+          não são vendidas, e não são usadas para treinar nenhum modelo de IA</strong>. Ninguém — nem outros
+          estudantes, nem terceiros — tem acesso ao que você escreve aqui. Como explicado abaixo, nesta
+          versão o conteúdo sequer sai do seu próprio navegador.
+        </p>
+      </div>
+
+      <div className="card">
         <h2 style={{ fontSize: '1.05rem' }}>O que é armazenado, e onde</h2>
         <p>
           Nesta versão (MVP), todas as suas respostas ficam salvas <strong>apenas no seu próprio

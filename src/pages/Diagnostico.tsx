@@ -1,20 +1,38 @@
 import { useMemo } from 'react';
 import { useStore } from '../state/store';
+import { useRouter } from '../state/router';
 import { PageHeader } from '../components/PageHeader';
 import { PriorityList } from '../components/PriorityList';
 import { diagnosticarProjeto } from '../rules/diagnostico';
-import { gerarTextoDiagnostico, baixarComoArquivo } from '../utils/exportar';
+import { gerarPdfDiagnostico, nomeArquivoPdf } from '../utils/pdf';
 
 export function Diagnostico() {
   const { projeto } = useStore();
+  const { navegar } = useRouter();
   const resultado = useMemo(() => (projeto ? diagnosticarProjeto(projeto) : null), [projeto]);
 
   if (!projeto || !resultado) return null;
   const { dimensoes, prioridades } = resultado;
+  const orientadorEmail = projeto.metodologia.orientadorEmail.trim();
 
-  function exportarTxt() {
-    const texto = gerarTextoDiagnostico(projeto!, dimensoes, prioridades);
-    baixarComoArquivo(`diagnostico-${projeto!.tituloProvisorio.slice(0, 30).replace(/\s+/g, '-')}.txt`, texto);
+  function baixarPdf() {
+    const doc = gerarPdfDiagnostico(projeto!, dimensoes, prioridades);
+    doc.save(nomeArquivoPdf(projeto!));
+  }
+
+  function enviarPorEmail() {
+    const linhas = [
+      `Diagnóstico de Maturidade da Pesquisa — ${projeto!.tituloProvisorio}`,
+      `Estudante: ${projeto!.perfil.nome}`,
+      '',
+      'Três prioridades antes da entrega:',
+      ...prioridades.slice(0, 3).map((p, i) => `${i + 1}. ${p.titulo} — ${p.explicacao}`),
+      '',
+      '(Baixe o PDF pelo botão ao lado e anexe a este e-mail — o link "mailto" não anexa arquivos automaticamente.)',
+    ];
+    const assunto = encodeURIComponent(`Diagnóstico da pesquisa — ${projeto!.tituloProvisorio}`);
+    const corpo = encodeURIComponent(linhas.join('\n'));
+    window.location.href = `mailto:${orientadorEmail}?subject=${assunto}&body=${corpo}`;
   }
 
   return (
@@ -48,10 +66,34 @@ export function Diagnostico() {
         />
       </section>
 
-      <div className="row no-print">
-        <button type="button" className="btn secondary" onClick={exportarTxt}>Exportar diagnóstico (.txt)</button>
-        <button type="button" className="btn secondary" onClick={() => window.print()}>Imprimir / salvar como PDF</button>
-      </div>
+      <section className="card no-print">
+        <h2 style={{ marginTop: 0, fontSize: '1.1rem' }}>Exportar e compartilhar</h2>
+        <div className="row">
+          <button type="button" className="btn" onClick={baixarPdf}>Baixar PDF</button>
+          <button type="button" className="btn secondary" onClick={() => window.print()}>Imprimir</button>
+        </div>
+        <div style={{ marginTop: 16 }}>
+          {orientadorEmail ? (
+            <>
+              <button type="button" className="btn secondary" onClick={enviarPorEmail}>
+                Enviar cópia por e-mail para {projeto.metodologia.orientadorNome || orientadorEmail}
+              </button>
+              <p className="help-text" style={{ marginTop: 8 }}>
+                Isso abre o seu programa de e-mail com a mensagem pronta. Anexe o PDF baixado antes de enviar
+                — o link de e-mail não consegue anexar arquivos sozinho.
+              </p>
+            </>
+          ) : (
+            <p className="help-text">
+              Quer enviar uma cópia para o seu orientador? Cadastre o e-mail dele na etapa{' '}
+              <button type="button" className="btn ghost" style={{ padding: 0 }} onClick={() => navegar({ pagina: 'metodologia' })}>
+                "Sujeitos da pesquisa e orientação"
+              </button>{' '}
+              no Bloco 4.
+            </p>
+          )}
+        </div>
+      </section>
     </div>
   );
 }

@@ -71,9 +71,14 @@ export interface EscolhaMetodologica {
   abordagem: AbordagemPesquisa;
   abordagemJustificativa: string;
   delineamentos: string[]; // ids da KB, múltipla escolha
+  /** Delineamentos que não estão na Base de Conhecimento, digitados livremente pelo estudante. */
+  delineamentosCustom: string[];
   tecnicasColeta: string[]; // ids da KB
   tecnicasAnalise: string[]; // ids da KB
   relacaoColetaObjetivos: Record<string, string[]>; // tecnicaId -> objetivoIds
+  sujeitosPesquisa: string;
+  orientadorNome: string;
+  orientadorEmail: string;
 }
 
 export interface EticaInfo {
@@ -94,6 +99,9 @@ export interface ArquiteturaPesquisaState {
   incomodoTexto: string;
   perguntaConfirmada: SimNaoTalvez | null;
   perguntaPesquisa: string;
+  /** Texto exato da pergunta no momento da última confirmação — usado para
+   * detectar mudança real (Regra 8) em vez de disparar revisão a cada tecla. */
+  ultimaPerguntaConfirmadaTexto: string;
   necessitaHipotese: SimNaoTalvez | null;
   hipotese: string;
   objetivoGeral: string;

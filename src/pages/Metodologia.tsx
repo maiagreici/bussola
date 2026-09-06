@@ -2,12 +2,18 @@ import { useMemo, useState } from 'react';
 import { useStore } from '../state/store';
 import { PageHeader } from '../components/PageHeader';
 import { KBCard } from '../components/KBCard';
-import { TextAreaField } from '../components/Field';
+import { TextAreaField, TextField } from '../components/Field';
 import { CoherenceAlerts } from '../components/CoherenceAlert';
 import { naturezaKB, abordagemKB, delineamentoKB, coletaKB, analiseKB } from '../knowledge';
 import { verificarMatrizMetodologica } from '../rules/coherence';
 import { aiService } from '../services/aiService';
 import type { NaturezaPesquisa, AbordagemPesquisa } from '../types/project';
+
+function nomeCurtoObjetivo(descricao: string, indice: number): string {
+  const texto = descricao.trim();
+  if (!texto) return `Objetivo ${indice + 1}`;
+  return texto.length > 28 ? texto.slice(0, 28) + '…' : texto;
+}
 
 export function Metodologia() {
   const { projeto, atualizar } = useStore();
@@ -15,6 +21,8 @@ export function Metodologia() {
   const [textoEditavel, setTextoEditavel] = useState<string | null>(null);
   const [mostrarOrigens, setMostrarOrigens] = useState(false);
   const [copiado, setCopiado] = useState(false);
+  const [novoDelineamento, setNovoDelineamento] = useState('');
+  const [sugerindoDelineamento, setSugerindoDelineamento] = useState(false);
 
   const alertasMatriz = useMemo(() => (projeto ? verificarMatrizMetodologica(projeto) : []), [projeto]);
 
@@ -36,6 +44,29 @@ export function Metodologia() {
     const atuais = m.relacaoColetaObjetivos[tecnicaId] ?? [];
     const novos = atuais.includes(objetivoId) ? atuais.filter((x) => x !== objetivoId) : [...atuais, objetivoId];
     atualizarMetodologia({ relacaoColetaObjetivos: { ...m.relacaoColetaObjetivos, [tecnicaId]: novos } });
+  }
+
+  function marcarRevisaoConcluida() {
+    atualizarMetodologia({ precisaRevisaoCoerencia: false });
+  }
+
+  function adicionarDelineamentoCustom() {
+    const texto = novoDelineamento.trim();
+    if (!texto) return;
+    atualizarMetodologia({ delineamentosCustom: [...m.delineamentosCustom, texto] });
+    setNovoDelineamento('');
+  }
+
+  function removerDelineamentoCustom(texto: string) {
+    atualizarMetodologia({ delineamentosCustom: m.delineamentosCustom.filter((d) => d !== texto) });
+  }
+
+  async function sugerirDelineamentoAutomatico() {
+    setSugerindoDelineamento(true);
+    const sugeridos = await aiService.sugerirDelineamento(m.abordagem);
+    const novos = Array.from(new Set([...m.delineamentos, ...sugeridos]));
+    atualizarMetodologia({ delineamentos: novos });
+    setSugerindoDelineamento(false);
   }
 
   const podeGerarTexto = !!m.natureza && !!m.abordagem && m.delineamentos.length > 0 && m.tecnicasColeta.length > 0 && m.tecnicasAnalise.length > 0;
@@ -78,6 +109,9 @@ export function Metodologia() {
         <div className="alert danger" style={{ marginBottom: 16 }}>
           <strong>Esta seção foi marcada para revisão</strong>
           <p style={{ margin: '6px 0 0' }}>Algo essencial mudou no Bloco 1 (provavelmente a pergunta de pesquisa). Releia suas escolhas metodológicas.</p>
+          <button type="button" className="btn secondary" style={{ marginTop: 10 }} onClick={marcarRevisaoConcluida}>
+            Já revisei — marcar como concluída
+          </button>
         </div>
       )}
 
@@ -118,10 +152,33 @@ export function Metodologia() {
       <section className="card">
         <h2 style={{ marginTop: 0, fontSize: '1.1rem' }}>3. Tipo / delineamento</h2>
         <p className="help-text">Essas categorias pertencem a níveis diferentes e podem coexistir — selecione quantas fizerem sentido para sua pesquisa.</p>
+        {m.abordagem && (
+          <button type="button" className="btn secondary" onClick={sugerirDelineamentoAutomatico} disabled={sugerindoDelineamento} style={{ marginBottom: 12 }}>
+            {sugerindoDelineamento ? 'Sugerindo…' : 'Sugerir automaticamente a partir da minha abordagem'}
+          </button>
+        )}
         <div className="module-grid">
           {delineamentoKB.map((item) => (
             <KBCard key={item.id} item={item} selecionado={m.delineamentos.includes(item.id)} onToggle={() => toggleMultiplo('delineamentos', item.id)} />
           ))}
+        </div>
+        <div style={{ marginTop: 16 }}>
+          <h3 style={{ fontSize: '0.95rem' }}>Não encontrou o tipo da sua pesquisa na lista?</h3>
+          <p className="help-text">Adicione livremente — essa lista não é fechada.</p>
+          <div className="row">
+            <TextField label="Outro tipo de delineamento" value={novoDelineamento} onChange={setNovoDelineamento} placeholder="Ex: pesquisa de desenvolvimento" />
+            <button type="button" className="btn secondary" style={{ alignSelf: 'flex-end', height: 42 }} onClick={adicionarDelineamentoCustom}>+ Adicionar</button>
+          </div>
+          {m.delineamentosCustom.length > 0 && (
+            <div className="choice-group">
+              {m.delineamentosCustom.map((d) => (
+                <span key={d} className="choice-btn" aria-pressed="true">
+                  {d}{' '}
+                  <button type="button" className="btn ghost" style={{ padding: '0 0 0 6px' }} onClick={() => removerDelineamentoCustom(d)} aria-label={`Remover ${d}`}>✕</button>
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -140,7 +197,7 @@ export function Metodologia() {
                 <thead>
                   <tr>
                     <th scope="col">Técnica</th>
-                    {objetivos.map((o, i) => <th scope="col" key={o.id}>Objetivo {i + 1}</th>)}
+                    {objetivos.map((o, i) => <th scope="col" key={o.id} title={o.descricao}>{nomeCurtoObjetivo(o.descricao, i)}</th>)}
                   </tr>
                 </thead>
                 <tbody>
@@ -172,6 +229,21 @@ export function Metodologia() {
           {analiseKB.map((item) => (
             <KBCard key={item.id} item={item} selecionado={m.tecnicasAnalise.includes(item.id)} onToggle={() => toggleMultiplo('tecnicasAnalise', item.id)} />
           ))}
+        </div>
+      </section>
+
+      <section className="card">
+        <h2 style={{ marginTop: 0, fontSize: '1.1rem' }}>Sujeitos da pesquisa e orientação</h2>
+        <TextAreaField
+          label="Quem são os sujeitos da pesquisa?"
+          help="Descreva quem vai participar (ex: 20 estudantes do 3º ano do ensino médio de uma escola pública) ou escreva 'não se aplica' se sua pesquisa não envolve participantes humanos."
+          value={m.sujeitosPesquisa}
+          onChange={(v) => atualizarMetodologia({ sujeitosPesquisa: v })}
+          rows={2}
+        />
+        <div className="row">
+          <TextField label="Nome do orientador (opcional)" value={m.orientadorNome} onChange={(v) => atualizarMetodologia({ orientadorNome: v })} />
+          <TextField label="E-mail do orientador (opcional)" type="email" value={m.orientadorEmail} onChange={(v) => atualizarMetodologia({ orientadorEmail: v })} help="Usado apenas para o botão de enviar o Diagnóstico Final por e-mail." />
         </div>
       </section>
 

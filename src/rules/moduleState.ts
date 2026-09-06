@@ -1,6 +1,14 @@
 import type { EstadoModulo, ModuloId, ResearchProject } from '../types/project';
 import { verificarCoerenciaArquiteturaPesquisa, verificarMatrizMetodologica } from './coherence';
 
+/** Uma resposta "ainda não" só conta como desenvolvida se o texto explicativo
+ * tiver conteúdo mínimo — evita marcar como completo algo respondido de forma
+ * superficial (ex.: uma palavra só). */
+const TAMANHO_MINIMO_RESPOSTA = 15;
+function respostaSuficiente(texto: string): boolean {
+  return texto.trim().length >= TAMANHO_MINIMO_RESPOSTA;
+}
+
 export function estadoMarcoZero(p: ResearchProject): EstadoModulo {
   const mz = p.marcoZero;
   if (mz.concluido) return 'concluido';
@@ -30,10 +38,22 @@ export function estadoArquiteturaTexto(p: ResearchProject): EstadoModulo {
     at.conteudoNoLugarCertoConfirmado === null &&
     at.estruturaProvisoria.length === 0;
   if (nada) return 'nao_iniciado';
-  const completo =
-    at.proporcionalidadeConfirmada !== null &&
-    at.conteudoNoLugarCertoConfirmado !== null &&
-    at.estruturaProvisoria.length > 0;
+
+  const proporcionalidadeOk =
+    at.proporcionalidadeConfirmada === 'sim' ||
+    (at.proporcionalidadeConfirmada === 'ainda_nao' && respostaSuficiente(at.proporcionalidadeObservacoes));
+  const conteudoOk =
+    at.conteudoNoLugarCertoConfirmado === 'sim' ||
+    (at.conteudoNoLugarCertoConfirmado === 'ainda_nao' && respostaSuficiente(at.conteudoNoLugarCertoObservacoes));
+
+  // Respondeu "ainda não" mas não escreveu nada de fato (ou escreveu muito
+  // pouco) — isso é um sinal de alerta, não um item "em andamento" comum.
+  const respostaSuperficial =
+    (at.proporcionalidadeConfirmada === 'ainda_nao' && !respostaSuficiente(at.proporcionalidadeObservacoes)) ||
+    (at.conteudoNoLugarCertoConfirmado === 'ainda_nao' && !respostaSuficiente(at.conteudoNoLugarCertoObservacoes));
+  if (respostaSuperficial) return 'precisa_revisao';
+
+  const completo = proporcionalidadeOk && conteudoOk && at.estruturaProvisoria.length > 0;
   return completo ? 'concluido' : 'em_andamento';
 }
 

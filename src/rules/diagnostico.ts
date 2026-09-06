@@ -52,11 +52,18 @@ export function diagnosticarProjeto(p: ResearchProject): { dimensoes: DimensaoDi
   dimensoes.push({
     chave: 'texto',
     nome: 'Arquitetura textual',
-    estado: estadoTexto === 'concluido' ? 'verde' : estadoTexto === 'nao_iniciado' ? 'vermelho' : 'amarelo',
-    criterio: 'Proporcionalidade das seções, conteúdo no lugar certo e sumário provisório definido.',
+    estado:
+      estadoTexto === 'concluido' ? 'verde' : estadoTexto === 'nao_iniciado' || estadoTexto === 'precisa_revisao' ? 'vermelho' : 'amarelo',
+    criterio:
+      estadoTexto === 'precisa_revisao'
+        ? 'Você respondeu "ainda não" em algum item, mas escreveu pouco ou nada sobre o que precisa corrigir.'
+        : 'Proporcionalidade das seções, conteúdo no lugar certo e sumário provisório definido.',
   });
   if (estadoTexto === 'nao_iniciado') {
     prioridades.push({ titulo: 'Esboce seu sumário provisório', explicacao: 'Sem uma estrutura mínima de capítulos, fica difícil avaliar se o texto reflete a pesquisa.', impacto: 3 });
+  }
+  if (estadoTexto === 'precisa_revisao') {
+    prioridades.push({ titulo: 'Detalhe o que está desproporcional ou fora do lugar', explicacao: 'Você sinalizou um problema na Arquitetura do Texto, mas a explicação está vazia ou muito curta para ser acionável.', impacto: 1 });
   }
 
   // 4. Referencial

@@ -22,6 +22,8 @@ export interface AIService {
   sugerirPerguntasDePesquisa(textoIncomodo: string): Promise<PossibilidadePergunta[]>;
   verificarAlinhamentoObjetivoPergunta(pergunta: string, objetivoGeral: string): Promise<string | null>;
   sugerirEstruturaSumario(contexto: { titulo: string; area: string }): Promise<NoArvore[]>;
+  /** Sugestão inicial de delineamento a partir da abordagem já escolhida — sempre editável pelo estudante. */
+  sugerirDelineamento(abordagem: EscolhaMetodologica['abordagem']): Promise<string[]>;
   gerarTextoMetodologico(
     metodologia: EscolhaMetodologica,
     objetivos: ObjetivoEspecifico[],
@@ -58,8 +60,8 @@ export class MockAIService implements AIService {
     const termos = extrairSubstantivosSimples(textoIncomodo).slice(0, 5);
     if (termos.length === 0) return [];
     return [
-      `[MOCK] O texto menciona repetidamente os termos "${termos.slice(0, 3).join('", "')}" — vale explicitar como eles se relacionam entre si.`,
-      `[MOCK] Considere se há uma tensão entre o que "deveria acontecer" e o que você observa acontecer na prática — isso costuma ser o núcleo de um bom problema de pesquisa.`,
+      `O texto menciona repetidamente os termos "${termos.slice(0, 3).join('", "')}" — vale explicitar como eles se relacionam entre si.`,
+      `Considere se há uma tensão entre o que "deveria acontecer" e o que você observa acontecer na prática — isso costuma ser o núcleo de um bom problema de pesquisa.`,
     ];
   }
 
@@ -93,9 +95,16 @@ export class MockAIService implements AIService {
     const termosObjetivo = extrairSubstantivosSimples(objetivoGeral);
     const emComum = termosObjetivo.filter((t) => termosPergunta.has(t));
     if (emComum.length === 0) {
-      return '[MOCK] Não encontramos termos em comum entre a pergunta e o objetivo geral. Releia os dois e confirme se o foco não mudou no caminho.';
+      return 'Não encontramos termos em comum entre a pergunta e o objetivo geral. Releia os dois e confirme se o foco não mudou no caminho.';
     }
     return null;
+  }
+
+  async sugerirDelineamento(abordagem: EscolhaMetodologica['abordagem']): Promise<string[]> {
+    if (abordagem === 'qualitativa') return ['estudo_caso'];
+    if (abordagem === 'quantitativa') return ['levantamento_survey'];
+    if (abordagem === 'mista') return ['estudo_caso', 'levantamento_survey'];
+    return [];
   }
 
   async sugerirEstruturaSumario(contexto: { titulo: string; area: string }): Promise<NoArvore[]> {
@@ -118,22 +127,32 @@ export class MockAIService implements AIService {
     const origens: Record<string, string> = {};
     const partes: string[] = [];
 
-    const naturezaNome = metodologia.natureza
-      ? buscarItemKB(metodologia.natureza)?.nome ?? metodologia.natureza
+    // Usamos apenas o adjetivo (não o nome completo do item da Base de
+    // Conhecimento) para não duplicar a palavra "natureza"/"abordagem" que já
+    // está fixa no texto-modelo abaixo — ver bug relatado de "abordagem abordagem mista".
+    const ADJETIVO_NATUREZA: Record<string, string> = { basica: 'básica', aplicada: 'aplicada' };
+    const ADJETIVO_ABORDAGEM: Record<string, string> = { qualitativa: 'qualitativa', quantitativa: 'quantitativa', mista: 'mista' };
+
+    const naturezaAdjetivo = metodologia.natureza
+      ? ADJETIVO_NATUREZA[metodologia.natureza] ?? metodologia.natureza
       : '[INFORMAÇÃO AUSENTE — natureza da pesquisa ainda não definida]';
-    const trechoNatureza = `A pesquisa caracteriza-se, quanto à sua natureza, como ${naturezaNome.toLowerCase()}`;
+    const trechoNatureza = `A pesquisa caracteriza-se, quanto à sua natureza, como ${naturezaAdjetivo}`;
     partes.push(trechoNatureza);
     origens[trechoNatureza] = 'Resposta confirmada na etapa "Natureza da pesquisa"';
 
-    const abordagemNome = metodologia.abordagem
-      ? buscarItemKB(metodologia.abordagem)?.nome ?? metodologia.abordagem
+    const abordagemAdjetivo = metodologia.abordagem
+      ? ADJETIVO_ABORDAGEM[metodologia.abordagem] ?? metodologia.abordagem
       : '[INFORMAÇÃO AUSENTE — abordagem ainda não definida]';
-    const trechoAbordagem = `possuindo abordagem ${abordagemNome.toLowerCase()}`;
+    const trechoAbordagem = `possuindo abordagem ${abordagemAdjetivo}`;
     partes.push(trechoAbordagem);
     origens[trechoAbordagem] = 'Resposta confirmada na etapa "Abordagem"';
 
-    if (metodologia.delineamentos.length > 0) {
-      const nomes = metodologia.delineamentos.map((id) => buscarItemKB(id)?.nome ?? id).join(', ');
+    const todosDelineamentos = [
+      ...metodologia.delineamentos.map((id) => buscarItemKB(id)?.nome ?? id),
+      ...(metodologia.delineamentosCustom ?? []),
+    ];
+    if (todosDelineamentos.length > 0) {
+      const nomes = todosDelineamentos.join(', ');
       const trecho = `sendo desenvolvida como ${nomes.toLowerCase()}`;
       partes.push(trecho);
       origens[trecho] = 'Resposta confirmada na etapa "Delineamento"';
@@ -159,17 +178,24 @@ export class MockAIService implements AIService {
       textoAnalise = '[INFORMAÇÃO AUSENTE — método(s) de análise ainda não definido(s)]';
     }
 
+    let textoSujeitos = '';
+    if (metodologia.sujeitosPesquisa?.trim()) {
+      const sujeitos = metodologia.sujeitosPesquisa.trim().replace(/[.!?]+$/, '');
+      textoSujeitos = `Os sujeitos da pesquisa serão: ${sujeitos}.`;
+      origens[textoSujeitos] = 'Resposta confirmada em "Sujeitos da pesquisa"';
+    }
+
     let textoObjetivos = '';
     if (objetivos.length > 0) {
       textoObjetivos = `Tais procedimentos relacionam-se aos objetivos específicos definidos, em especial: ${objetivos
         .slice(0, 3)
-        .map((o) => o.descricao)
+        .map((o) => o.descricao.trim().replace(/[.!?]+$/, ''))
         .filter(Boolean)
         .join('; ')}.`;
       origens[textoObjetivos] = 'Objetivos específicos confirmados no Bloco 1';
     }
 
-    const texto = [partes.join(', ') + '.', textoColeta, textoAnalise, textoObjetivos]
+    const texto = [partes.join(', ') + '.', textoColeta, textoAnalise, textoSujeitos, textoObjetivos]
       .filter(Boolean)
       .join(' ');
 
