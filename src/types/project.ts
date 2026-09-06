@@ -7,6 +7,7 @@ export type NivelAcademico =
   | 'especializacao'
   | 'mestrado'
   | 'doutorado'
+  | 'selecao'
   | 'outro';
 
 export type SimNaoTalvez = 'sim' | 'ainda_nao' | 'nao_sei';

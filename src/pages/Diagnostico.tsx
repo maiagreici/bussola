@@ -5,6 +5,7 @@ import { PageHeader } from '../components/PageHeader';
 import { PriorityList } from '../components/PriorityList';
 import { diagnosticarProjeto } from '../rules/diagnostico';
 import { gerarPdfDiagnostico, nomeArquivoPdf } from '../utils/pdf';
+import { fraseConviteCadastrarContato, fraseTresCoisasAntesDeEnviar, frasePorQueImportaDiagnostico, rotuloSecaoContato } from '../utils/linguagemPerfil';
 
 export function Diagnostico() {
   const { projeto } = useStore();
@@ -41,7 +42,7 @@ export function Diagnostico() {
         eyebrow="Diagnóstico Final"
         titulo="Maturidade da sua pesquisa"
         oQueVerificamos="Um retrato transparente de onde sua pesquisa está mais sólida e onde ainda precisa de atenção, por critérios explícitos — nunca uma nota arbitrária."
-        porQueImporta="Isso é exatamente o que um bom orientador olharia antes de mergulhar nos detalhes: a arquitetura está de pé?"
+        porQueImporta={frasePorQueImportaDiagnostico(projeto.perfil.nivel)}
       />
 
       <section className="card">
@@ -61,6 +62,7 @@ export function Diagnostico() {
 
       <section className="card">
         <PriorityList
+          titulo={fraseTresCoisasAntesDeEnviar(projeto.perfil.nivel)}
           prioritarias={prioridades.slice(0, 3).map((p) => ({ titulo: p.titulo, explicacao: p.explicacao }))}
           outras={prioridades.slice(3).map((p) => ({ titulo: p.titulo, explicacao: p.explicacao }))}
         />
@@ -85,9 +87,9 @@ export function Diagnostico() {
             </>
           ) : (
             <p className="help-text">
-              Quer enviar uma cópia para o seu orientador? Cadastre o e-mail dele na etapa{' '}
+              {fraseConviteCadastrarContato(projeto.perfil.nivel)}{' '}
               <button type="button" className="btn ghost" style={{ padding: 0 }} onClick={() => navegar({ pagina: 'metodologia' })}>
-                "Sujeitos da pesquisa e orientação"
+                "{rotuloSecaoContato(projeto.perfil.nivel)}"
               </button>{' '}
               no Bloco 4.
             </p>

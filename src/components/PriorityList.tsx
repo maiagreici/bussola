@@ -5,11 +5,11 @@ export interface ItemPrioridade {
   explicacao: string;
 }
 
-export function PriorityList({ prioritarias, outras }: { prioritarias: ItemPrioridade[]; outras: ItemPrioridade[] }) {
+export function PriorityList({ titulo, prioritarias, outras }: { titulo?: string; prioritarias: ItemPrioridade[]; outras: ItemPrioridade[] }) {
   const [aberto, setAberto] = useState(false);
   return (
     <div className="stack">
-      <h3 style={{ margin: 0 }}>As três coisas que eu faria antes de enviar ao orientador</h3>
+      <h3 style={{ margin: 0 }}>{titulo ?? 'As três coisas que eu faria antes de enviar ao orientador'}</h3>
       {prioritarias.length === 0 && (
         <p className="help-text">Nenhuma prioridade crítica identificada com os critérios atuais — bom sinal.</p>
       )}

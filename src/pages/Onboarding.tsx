@@ -10,6 +10,7 @@ const NIVEIS: { valor: NivelAcademico; rotulo: string }[] = [
   { valor: 'especializacao', rotulo: 'Especialização' },
   { valor: 'mestrado', rotulo: 'Mestrado' },
   { valor: 'doutorado', rotulo: 'Doutorado' },
+  { valor: 'selecao', rotulo: 'Querendo passar em uma seleção (ainda não sou aluno)' },
   { valor: 'outro', rotulo: 'Outro' },
 ];
 
@@ -49,7 +50,8 @@ export function Onboarding() {
         <h1 style={{ marginTop: 4 }}>Vamos organizar sua pesquisa</h1>
         <p className="help-text">
           Este não é um gerador de TCC. É uma pré-orientação estruturada: um espaço para você examinar e
-          amadurecer sua própria pesquisa antes de levá-la ao seu orientador.
+          amadurecer sua própria pesquisa antes de levá-la adiante — seja para o seu orientador, seja para
+          uma banca de seleção.
         </p>
         <form onSubmit={handleSubmit} noValidate>
           <TextField label="Nome *" value={nome} onChange={setNome} />

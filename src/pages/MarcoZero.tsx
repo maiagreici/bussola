@@ -5,6 +5,7 @@ import { YesNoUnknown } from '../components/YesNoUnknown';
 import { TextAreaField } from '../components/Field';
 import { criarTarefaSeNecessario, concluirTarefasPorOrigem } from '../rules/coherence';
 import { exigenciasEticasComuns } from '../knowledge';
+import { fraseMandarAssim, fraseVerificarEtica, fraseConfirmadoJuntoA } from '../utils/linguagemPerfil';
 import type { ResearchProject, SimNaoTalvez } from '../types/project';
 
 export function MarcoZero() {
@@ -99,7 +100,7 @@ export function MarcoZero() {
         {mz.secoesDesenvolvidas === 'ainda_nao' && (
           <div className="alert warning" style={{ marginTop: 12 }}>
             <p style={{ margin: '0 0 8px' }}>
-              <strong>Sério que você pensou em mandar assim para o seu orientador?</strong>
+              <strong>{fraseMandarAssim(projeto.perfil.nivel)}</strong>
             </p>
             <p style={{ margin: '0 0 8px' }}>
               Antes de revisar qualidade, precisamos ter alguma coisa para revisar.
@@ -146,9 +147,9 @@ export function MarcoZero() {
           ]}
         />
         <div className="alert warning" style={{ marginTop: 10 }}>
-          <strong>IMPORTANTE:</strong> verifique isso com o seu orientador. Este sistema não decide se sua
-          pesquisa exige ou não aprovação ética — isso deve ser confirmado junto ao seu orientador e às
-          normas da sua instituição. Abaixo estão exemplos comuns; marque os que podem se aplicar ao seu caso.
+          <strong>IMPORTANTE:</strong> {fraseVerificarEtica(projeto.perfil.nivel)}. Este sistema não decide
+          se sua pesquisa exige ou não aprovação ética — isso deve ser {fraseConfirmadoJuntoA(projeto.perfil.nivel)}.
+          Abaixo estão exemplos comuns; marque os que podem se aplicar ao seu caso.
         </div>
         <div className="stack" style={{ marginTop: 10 }}>
           {exigenciasEticasComuns.map((item) => (

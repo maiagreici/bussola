@@ -1,6 +1,7 @@
 import { jsPDF } from 'jspdf';
 import type { ResearchProject } from '../types/project';
 import type { DimensaoDiagnostico, ItemPrioridadeInterno } from '../rules/diagnostico';
+import { fraseTresCoisasAntesDeEnviar } from './linguagemPerfil';
 
 const ROTULO_SEMAFORO: Record<string, string> = { verde: 'OK', amarelo: 'ATENÇÃO', vermelho: 'RESOLVER' };
 
@@ -49,7 +50,7 @@ export function gerarPdfDiagnostico(
     escreverParagrafo(d.criterio, 10, false, 10);
   });
 
-  escreverParagrafo('As três coisas que eu faria antes de enviar ao orientador', 14, true, 8);
+  escreverParagrafo(fraseTresCoisasAntesDeEnviar(p.perfil.nivel), 14, true, 8);
   if (prioridades.length === 0) {
     escreverParagrafo('Nenhuma prioridade crítica identificada com os critérios atuais.', 11);
   }

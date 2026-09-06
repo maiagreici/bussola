@@ -7,6 +7,7 @@ import { CoherenceAlerts } from '../components/CoherenceAlert';
 import { naturezaKB, abordagemKB, delineamentoKB, coletaKB, analiseKB } from '../knowledge';
 import { verificarMatrizMetodologica } from '../rules/coherence';
 import { aiService } from '../services/aiService';
+import { rotuloSecaoContato, rotuloNomeContato, rotuloEmailContato } from '../utils/linguagemPerfil';
 import type { NaturezaPesquisa, AbordagemPesquisa } from '../types/project';
 
 function nomeCurtoObjetivo(descricao: string, indice: number): string {
@@ -233,7 +234,7 @@ export function Metodologia() {
       </section>
 
       <section className="card">
-        <h2 style={{ marginTop: 0, fontSize: '1.1rem' }}>Sujeitos da pesquisa e orientação</h2>
+        <h2 style={{ marginTop: 0, fontSize: '1.1rem' }}>{rotuloSecaoContato(projeto.perfil.nivel)}</h2>
         <TextAreaField
           label="Quem são os sujeitos da pesquisa?"
           help="Descreva quem vai participar (ex: 20 estudantes do 3º ano do ensino médio de uma escola pública) ou escreva 'não se aplica' se sua pesquisa não envolve participantes humanos."
@@ -242,8 +243,8 @@ export function Metodologia() {
           rows={2}
         />
         <div className="row">
-          <TextField label="Nome do orientador (opcional)" value={m.orientadorNome} onChange={(v) => atualizarMetodologia({ orientadorNome: v })} />
-          <TextField label="E-mail do orientador (opcional)" type="email" value={m.orientadorEmail} onChange={(v) => atualizarMetodologia({ orientadorEmail: v })} help="Usado apenas para o botão de enviar o Diagnóstico Final por e-mail." />
+          <TextField label={rotuloNomeContato(projeto.perfil.nivel)} value={m.orientadorNome} onChange={(v) => atualizarMetodologia({ orientadorNome: v })} />
+          <TextField label={rotuloEmailContato(projeto.perfil.nivel)} type="email" value={m.orientadorEmail} onChange={(v) => atualizarMetodologia({ orientadorEmail: v })} help="Usado apenas para o botão de enviar o Diagnóstico Final por e-mail." />
         </div>
       </section>
 

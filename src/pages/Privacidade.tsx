@@ -54,7 +54,7 @@ export function Privacidade() {
         <ul>
           <li>Evite inserir dados pessoais sensíveis de terceiros (participantes de pesquisa, por exemplo) neste sistema.</li>
           <li>Este sistema não substitui a orientação acadêmica formal nem a avaliação de um Comitê de Ética.</li>
-          <li>Toda decisão científica (problema, objetivos, metodologia, interpretação) é de responsabilidade humana — do estudante e de seu orientador.</li>
+          <li>Toda decisão científica (problema, objetivos, metodologia, interpretação) é de responsabilidade humana — do estudante e de quem o orienta ou avalia (orientador, banca de seleção, etc.).</li>
           <li>O sistema pode ajudar a identificar inconsistências, mas não valida a correção científica do conteúdo.</li>
         </ul>
       </div>
