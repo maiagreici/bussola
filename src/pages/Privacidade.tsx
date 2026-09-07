@@ -14,24 +14,28 @@ export function Privacidade() {
       <div className="card">
         <h2 style={{ fontSize: '1.05rem' }}>Sua ideia é sua</h2>
         <p>
-          A sua pesquisa, suas ideias e suas decisões <strong>não são compartilhadas com outros usuários,
-          não são vendidas, e não são usadas para treinar nenhum modelo de IA</strong>. Ninguém — nem outros
-          estudantes, nem terceiros — tem acesso ao que você escreve aqui. Como explicado abaixo, nesta
-          versão o conteúdo sequer sai do seu próprio navegador.
+          A sua pesquisa, suas ideias e suas decisões <strong>não são compartilhadas com outros
+          estudantes, não são vendidas, e não são usadas para treinar nenhum modelo de IA</strong>. Nenhum
+          outro estudante tem acesso ao que você escreve aqui — apenas você e, se esta instalação tiver o
+          Painel do Professor ativado (ver abaixo), a pessoa responsável pela disciplina.
         </p>
       </div>
 
       <div className="card">
         <h2 style={{ fontSize: '1.05rem' }}>O que é armazenado, e onde</h2>
         <p>
-          Nesta versão (MVP), todas as suas respostas ficam salvas <strong>apenas no seu próprio
-          navegador</strong> (armazenamento local do dispositivo), sem envio a nenhum servidor. Isso
-          significa que o progresso não é sincronizado entre dispositivos e pode ser perdido se você limpar
-          os dados do navegador.
+          Todas as suas respostas ficam salvas no <strong>armazenamento local do seu navegador</strong>, o
+          que já garante que você não perde o progresso ao fechar a aba. Você pode apagar tudo a qualquer
+          momento limpando os dados do site no seu navegador.
         </p>
         <p>
-          Você pode apagar todos os seus dados a qualquer momento limpando o armazenamento local do
-          navegador para este site.
+          Além disso, esta instalação da Bússola pode estar configurada para também enviar uma cópia do seu
+          projeto para o <strong>servidor da própria instituição/professor</strong> que disponibilizou este
+          link — nunca para um provedor de IA externo, nunca para terceiros. Isso existe para alimentar o
+          <strong> Painel do Professor</strong>: uma tela protegida por senha, acessível só por quem
+          administra o site, que mostra o progresso e o diagnóstico de cada aluno — a mesma informação que
+          você já vê na sua própria tela de Diagnóstico Final, não mais que isso. Se você não sabe se esta
+          instalação tem essa cópia ativada, pergunte ao professor ou responsável pelo link que você recebeu.
         </p>
       </div>
 

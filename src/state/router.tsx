@@ -12,7 +12,8 @@ export type Rota =
   | { pagina: 'referencial' }
   | { pagina: 'metodologia' }
   | { pagina: 'diagnostico' }
-  | { pagina: 'privacidade' };
+  | { pagina: 'privacidade' }
+  | { pagina: 'painel_professor' };
 
 function rotaParaHash(rota: Rota): string {
   return '#/' + rota.pagina;
@@ -30,6 +31,7 @@ function hashParaRota(hash: string): Rota {
     'metodologia',
     'diagnostico',
     'privacidade',
+    'painel_professor',
   ];
   const encontrada = paginas.find((p) => p === limpo);
   return { pagina: encontrada ?? 'dashboard' };

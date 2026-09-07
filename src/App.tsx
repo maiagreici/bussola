@@ -1,5 +1,5 @@
 import { StoreProvider, useStore } from './state/store';
-import { RouterProvider, useRouter } from './state/router';
+import { RouterProvider, useRouter, type Rota } from './state/router';
 import { Layout } from './components/Layout';
 import { Onboarding } from './pages/Onboarding';
 import { Dashboard } from './pages/Dashboard';
@@ -10,12 +10,15 @@ import { Referencial } from './pages/Referencial';
 import { Metodologia } from './pages/Metodologia';
 import { Diagnostico } from './pages/Diagnostico';
 import { Privacidade } from './pages/Privacidade';
+import { PainelProfessor } from './pages/PainelProfessor';
+
+const ROTAS_SEM_PROJETO: Rota['pagina'][] = ['onboarding', 'painel_professor'];
 
 function Rotas() {
   const { projeto } = useStore();
   const { rota, navegar } = useRouter();
 
-  if (!projeto && rota.pagina !== 'onboarding') {
+  if (!projeto && !ROTAS_SEM_PROJETO.includes(rota.pagina)) {
     navegar({ pagina: 'onboarding' });
     return null;
   }
@@ -43,6 +46,8 @@ function Rotas() {
       return <Diagnostico />;
     case 'privacidade':
       return <Privacidade />;
+    case 'painel_professor':
+      return <PainelProfessor />;
     default:
       return <Dashboard />;
   }
@@ -52,7 +57,7 @@ function Conteudo() {
   const { rota } = useRouter();
   const { projeto } = useStore();
 
-  if (rota.pagina === 'onboarding' || !projeto) {
+  if (rota.pagina === 'onboarding' || rota.pagina === 'painel_professor' || !projeto) {
     return <Rotas />;
   }
   return (

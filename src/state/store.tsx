@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer } from 'react';
 import type { ResearchProject } from '../types/project';
+import { agendarSincronizacao } from '../services/syncService';
 
 const STORAGE_KEY = 'bussola.researchProject.v1';
 
@@ -49,6 +50,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       // Armazenamento indisponível (ex: modo privado). Falha silenciosa e local,
       // não deve interromper a experiência do usuário.
     }
+    // Espelha no backend próprio, se configurado (ver src/services/syncService.ts).
+    // O app continua funcionando normalmente mesmo sem servidor disponível.
+    if (projeto) agendarSincronizacao(projeto);
   }, [projeto]);
 
   const definirProjeto = useCallback((p: ResearchProject) => dispatch({ type: 'CARREGAR', payload: p }), []);

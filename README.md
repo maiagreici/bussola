@@ -66,6 +66,38 @@ A tela **Privacidade** (`src/pages/Privacidade.tsx`) já documenta o que
 seria enviado nesse cenário e exige consentimento explícito antes de
 qualquer envio real.
 
+## Backend opcional: Painel do Professor (PHP + MySQL)
+
+O app é 100% funcional sem nenhum servidor (tudo em `localStorage`). A pasta
+`api/` adiciona um backend **opcional**, pensado para hospedagem
+compartilhada (ex: HostGator/cPanel, que já roda PHP + MySQL nativamente):
+
+- `api/save.php` — recebe o `ResearchProject` inteiro (JSON) e grava/atualiza
+  uma linha por aluno (upsert por `id`), sem exigir login do aluno.
+- `api/login.php` / `api/logout.php` — autenticam o professor por senha
+  (hash em `api/config.php`, comparado com `password_verify`) e abrem uma
+  sessão PHP.
+- `api/list.php` — retorna todos os projetos salvos, só para sessão
+  autenticada; devolve o JSON completo de cada projeto, que o front-end
+  processa com a **mesma** `diagnosticarProjeto()` usada na tela do aluno
+  (`src/pages/PainelProfessor.tsx`) — nunca dois critérios diferentes de
+  maturidade dependendo de quem está olhando.
+- `api/db.sql` — schema de uma tabela só (`bussola_projetos`), com o projeto
+  inteiro guardado como JSON numa coluna `LONGTEXT` — evita duplicar no
+  banco a modelagem que já existe em `src/types/project.ts`.
+
+Para ativar: crie um banco MySQL e um usuário pelo cPanel, rode `db.sql` via
+phpMyAdmin, edite `api/config.php` com as credenciais e o hash da senha do
+professor, e suba a pasta `api/` junto com o build (`dist/`) para o mesmo
+host. Sem isso configurado, `src/services/syncService.ts` simplesmente falha
+em silêncio a cada tentativa de sincronizar — o app continua funcionando
+normalmente só com o `localStorage`.
+
+**Limitação de segurança conhecida:** `save.php` não autentica o aluno — o
+`id` do projeto (gerado aleatoriamente no navegador) funciona como um
+segredo de fato. Suficiente para uma turma pequena e de baixo risco; não é
+adequado para dados sensíveis ou um cenário adversarial.
+
 ## Limitações conhecidas do MVP (documentadas, não escondidas)
 
 - **Conferência bibliográfica bidirecional** (`src/utils/bibliografia.ts`):
@@ -81,8 +113,10 @@ qualquer envio real.
 - **Referências metodológicas da Base de Conhecimento** usam o placeholder
   `[REFERÊNCIA METODOLÓGICA A SER VALIDADA]` até que uma bibliografia
   definitiva e verificada seja incorporada — nunca uma referência inventada.
-- Persistência é local ao navegador (sem conta/sincronização entre
-  dispositivos) — documentado na tela de Privacidade.
+- Persistência principal é local ao navegador (localStorage). Opcionalmente,
+  se o backend em `api/` estiver configurado (ver seção abaixo), o projeto
+  também é espelhado num banco próprio para alimentar o Painel do Professor
+  — documentado na tela de Privacidade.
 
 ## Dados de demonstração
 
