@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useStore } from '../state/store';
+import { useRouter } from '../state/router';
 import { PageHeader } from '../components/PageHeader';
 import { YesNoUnknown } from '../components/YesNoUnknown';
 import { TextAreaField } from '../components/Field';
@@ -12,6 +13,7 @@ const TAMANHO_MINIMO_RESPOSTA = 15;
 
 export function ArquiteturaTexto() {
   const { projeto, atualizar } = useStore();
+  const { navegar } = useRouter();
   const [gerandoSugestao, setGerandoSugestao] = useState(false);
   if (!projeto) return null;
   const at = projeto.arquiteturaTexto;
@@ -140,6 +142,12 @@ export function ArquiteturaTexto() {
             )}
           </div>
         )}
+      </section>
+
+      <section className="card" style={{ background: 'var(--primary-soft)', borderColor: 'var(--primary)' }}>
+        <button type="button" className="btn" onClick={() => navegar({ pagina: 'referencial' })}>
+          Ir para o Bloco 3 — Referencial Teórico →
+        </button>
       </section>
     </div>
   );
