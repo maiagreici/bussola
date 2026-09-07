@@ -71,3 +71,35 @@ export function criarProjeto(
     decisoesConfirmadas: {},
   };
 }
+
+/**
+ * Preenche com valores padrão os campos que foram adicionados ao modelo de
+ * dados depois que um projeto já existia salvo (localStorage ou backend).
+ *
+ * BUG que isso corrige: um projeto salvo antes do campo
+ * `ultimaPerguntaConfirmadaTexto` existir carregava esse campo como
+ * `undefined`. Isso fazia a tela de Arquitetura da Pesquisa achar, por
+ * engano, que a pergunta tinha sido editada desde a última confirmação
+ * (undefined !== texto real) — bastava o estudante clicar em "Confirmar"
+ * de novo (para tirar aquele aviso) para a Regra 8 disparar sem necessidade
+ * e marcar a Metodologia como "precisa revisão" (vermelho) mesmo com tudo
+ * preenchido corretamente.
+ */
+export function normalizarProjeto(p: ResearchProject): ResearchProject {
+  const ap = p.arquiteturaPesquisa;
+  const m = p.metodologia;
+  return {
+    ...p,
+    arquiteturaPesquisa: {
+      ...ap,
+      ultimaPerguntaConfirmadaTexto: ap.ultimaPerguntaConfirmadaTexto ?? ap.perguntaPesquisa ?? '',
+    },
+    metodologia: {
+      ...m,
+      delineamentosCustom: m.delineamentosCustom ?? [],
+      sujeitosPesquisa: m.sujeitosPesquisa ?? '',
+      orientadorNome: m.orientadorNome ?? '',
+      orientadorEmail: m.orientadorEmail ?? '',
+    },
+  };
+}

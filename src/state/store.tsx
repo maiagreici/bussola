@@ -1,6 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer } from 'react';
 import type { ResearchProject } from '../types/project';
 import { agendarSincronizacao } from '../services/syncService';
+import { normalizarProjeto } from './factory';
 
 const STORAGE_KEY = 'bussola.researchProject.v1';
 
@@ -36,7 +37,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [projeto, dispatch] = useReducer(reducer, null, () => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      return raw ? (JSON.parse(raw) as ResearchProject) : null;
+      return raw ? normalizarProjeto(JSON.parse(raw) as ResearchProject) : null;
     } catch {
       return null;
     }

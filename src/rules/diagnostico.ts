@@ -85,10 +85,12 @@ export function diagnosticarProjeto(p: ResearchProject): { dimensoes: DimensaoDi
     chave: 'metodologia',
     nome: 'Metodologia',
     estado: p.metodologia.precisaRevisaoCoerencia ? 'vermelho' : estadoMetodo === 'concluido' ? 'verde' : estadoMetodo === 'nao_iniciado' ? 'vermelho' : 'amarelo',
-    criterio: 'Natureza, abordagem, delineamento, coleta e análise formam um conjunto coerente.',
+    criterio: p.metodologia.precisaRevisaoCoerencia
+      ? 'Sua pergunta de pesquisa mudou depois que a metodologia foi definida. Vá ao Bloco 4 e clique em "Já revisei — marcar como concluída" depois de conferir.'
+      : 'Natureza, abordagem, delineamento, coleta e análise formam um conjunto coerente.',
   });
   if (p.metodologia.precisaRevisaoCoerencia) {
-    prioridades.push({ titulo: 'Revise sua metodologia após a mudança na pergunta de pesquisa', explicacao: 'Sua pergunta mudou depois que a metodologia foi definida — confirme se ainda faz sentido.', impacto: 0 });
+    prioridades.push({ titulo: 'Revise sua metodologia após a mudança na pergunta de pesquisa', explicacao: 'Sua pergunta mudou depois que a metodologia foi definida — confira no Bloco 4 e clique em "Já revisei — marcar como concluída".', impacto: 0 });
   } else if (alertasMatriz.length > 0) {
     prioridades.push({ titulo: alertasMatriz[0].titulo, explicacao: alertasMatriz[0].explicacao, impacto: 1 });
   }
