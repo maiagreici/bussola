@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useStore } from '../state/store';
+import { useRouter } from '../state/router';
 import { PageHeader } from '../components/PageHeader';
 import { KBCard } from '../components/KBCard';
 import { TextAreaField, TextField } from '../components/Field';
@@ -18,6 +19,7 @@ function nomeCurtoObjetivo(descricao: string, indice: number): string {
 
 export function Metodologia() {
   const { projeto, atualizar } = useStore();
+  const { navegar } = useRouter();
   const [gerando, setGerando] = useState(false);
   const [textoEditavel, setTextoEditavel] = useState<string | null>(null);
   const [mostrarOrigens, setMostrarOrigens] = useState(false);
@@ -319,6 +321,9 @@ export function Metodologia() {
                     </ul>
                   </div>
                 )}
+                <button type="button" className="btn" onClick={() => navegar({ pagina: 'diagnostico' })}>
+                  Ir para o Diagnóstico Final →
+                </button>
               </div>
             )}
           </div>
