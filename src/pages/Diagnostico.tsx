@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useStore } from '../state/store';
 import { useRouter } from '../state/router';
 import { PageHeader } from '../components/PageHeader';
@@ -10,6 +10,7 @@ import { fraseConviteCadastrarContato, fraseTresCoisasAntesDeEnviar, frasePorQue
 export function Diagnostico() {
   const { projeto } = useStore();
   const { navegar } = useRouter();
+  const [copiado, setCopiado] = useState(false);
   const resultado = useMemo(() => (projeto ? diagnosticarProjeto(projeto) : null), [projeto]);
 
   if (!projeto || !resultado) return null;
@@ -21,18 +22,34 @@ export function Diagnostico() {
     doc.save(nomeArquivoPdf(projeto!));
   }
 
-  function enviarPorEmail() {
+  function montarMensagem() {
     const linhas = [
+      `Assunto: Diagnóstico da pesquisa — ${projeto!.tituloProvisorio}`,
+      '',
       `Diagnóstico de Maturidade da Pesquisa — ${projeto!.tituloProvisorio}`,
       `Estudante: ${projeto!.perfil.nome}`,
       '',
       'Três prioridades antes da entrega:',
       ...prioridades.slice(0, 3).map((p, i) => `${i + 1}. ${p.titulo} — ${p.explicacao}`),
       '',
-      '(Baixe o PDF pelo botão ao lado e anexe a este e-mail — o link "mailto" não anexa arquivos automaticamente.)',
+      '(O PDF completo foi baixado separadamente — anexe-o a este e-mail antes de enviar.)',
     ];
+    return linhas.join('\n');
+  }
+
+  function copiarMensagem() {
+    navigator.clipboard?.writeText(montarMensagem()).then(() => {
+      setCopiado(true);
+      setTimeout(() => setCopiado(false), 2500);
+    });
+  }
+
+  function enviarPorEmail() {
+    // Só funciona se o computador tiver um programa de e-mail padrão
+    // configurado (Outlook, Mail, Thunderbird...). Quem usa apenas webmail
+    // pelo navegador deve preferir "Copiar mensagem" acima.
     const assunto = encodeURIComponent(`Diagnóstico da pesquisa — ${projeto!.tituloProvisorio}`);
-    const corpo = encodeURIComponent(linhas.join('\n'));
+    const corpo = encodeURIComponent(montarMensagem());
     window.location.href = `mailto:${orientadorEmail}?subject=${assunto}&body=${corpo}`;
   }
 
@@ -77,12 +94,23 @@ export function Diagnostico() {
         <div style={{ marginTop: 16 }}>
           {orientadorEmail ? (
             <>
-              <button type="button" className="btn secondary" onClick={enviarPorEmail}>
-                Enviar cópia por e-mail para {projeto.metodologia.orientadorNome || orientadorEmail}
-              </button>
+              <p className="help-text" style={{ marginTop: 0, marginBottom: 8 }}>
+                Destinatário: {projeto.metodologia.orientadorNome || orientadorEmail} ({orientadorEmail})
+              </p>
+              <div className="row">
+                <button type="button" className="btn" onClick={copiarMensagem}>
+                  {copiado ? 'Copiado!' : 'Copiar mensagem'}
+                </button>
+                <button type="button" className="btn secondary" onClick={enviarPorEmail}>
+                  Tentar abrir no programa de e-mail
+                </button>
+              </div>
               <p className="help-text" style={{ marginTop: 8 }}>
-                Isso abre o seu programa de e-mail com a mensagem pronta. Anexe o PDF baixado antes de enviar
-                — o link de e-mail não consegue anexar arquivos sozinho.
+                <strong>Copiar mensagem</strong> funciona sempre: cole o texto direto no Gmail, Outlook web ou
+                qualquer serviço de e-mail e anexe o PDF baixado. Já <strong>"Tentar abrir no programa de
+                e-mail"</strong> só funciona se o seu computador tiver um aplicativo de e-mail configurado como
+                padrão (ex: Outlook, Mail, Thunderbird) — se você usa e-mail só pelo navegador, use a opção
+                de copiar.
               </p>
             </>
           ) : (
