@@ -241,6 +241,17 @@ export function ArquiteturaPesquisa() {
       </section>
 
       <section className="card">
+        <h2 style={{ marginTop: 0, fontSize: '1.1rem' }}>Resultados esperados / preliminares</h2>
+        <TextAreaField
+          label="O que você espera encontrar — ou, se já tiver dados preliminares, o que já observou até agora"
+          help="Isso é uma expectativa provisória, não um resultado definitivo. Se ainda não tem nenhuma pista, pode deixar em branco por enquanto."
+          value={ap.resultadosEsperados}
+          onChange={(v) => atualizar((p) => ({ ...p, arquiteturaPesquisa: { ...p.arquiteturaPesquisa, resultadosEsperados: v } }))}
+          rows={3}
+        />
+      </section>
+
+      <section className="card">
         <h2 style={{ marginTop: 0, fontSize: '1.1rem' }}>Teste de coerência da pesquisa</h2>
         <CoherenceAlerts alertas={alertas} tituloOk="Está coerente" />
         {ap.precisaRevisaoCoerencia && alertas.length === 0 && (

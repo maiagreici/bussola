@@ -4,7 +4,7 @@ import { useRouter } from '../state/router';
 import { PageHeader } from '../components/PageHeader';
 import { PriorityList } from '../components/PriorityList';
 import { diagnosticarProjeto } from '../rules/diagnostico';
-import { gerarPdfDiagnostico, nomeArquivoPdf } from '../utils/pdf';
+import { gerarPdfCompleto, nomeArquivoPdf } from '../utils/pdf';
 import { fraseConviteCadastrarContato, fraseTresCoisasAntesDeEnviar, frasePorQueImportaDiagnostico, rotuloSecaoContato } from '../utils/linguagemPerfil';
 
 export function Diagnostico() {
@@ -18,7 +18,7 @@ export function Diagnostico() {
   const orientadorEmail = projeto.metodologia.orientadorEmail.trim();
 
   function baixarPdf() {
-    const doc = gerarPdfDiagnostico(projeto!, dimensoes, prioridades);
+    const doc = gerarPdfCompleto(projeto!, dimensoes, prioridades);
     doc.save(nomeArquivoPdf(projeto!));
   }
 
@@ -87,8 +87,12 @@ export function Diagnostico() {
 
       <section className="card no-print">
         <h2 style={{ marginTop: 0, fontSize: '1.1rem' }}>Exportar e compartilhar</h2>
+        <p className="help-text" style={{ marginTop: 0 }}>
+          O PDF traz tudo o que você escreveu em todos os blocos (Marco Zero, Arquitetura da Pesquisa,
+          Arquitetura do Texto, Referencial, Metodologia) e não só o resumo do Diagnóstico Final.
+        </p>
         <div className="row">
-          <button type="button" className="btn" onClick={baixarPdf}>Baixar PDF</button>
+          <button type="button" className="btn" onClick={baixarPdf}>Baixar PDF completo</button>
           <button type="button" className="btn secondary" onClick={() => window.print()}>Imprimir</button>
         </div>
         <div style={{ marginTop: 16 }}>
