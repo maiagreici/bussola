@@ -5,6 +5,7 @@ import { PageHeader } from '../components/PageHeader';
 import { PriorityList } from '../components/PriorityList';
 import { diagnosticarProjeto } from '../rules/diagnostico';
 import { gerarPdfCompleto, nomeArquivoPdf } from '../utils/pdf';
+import { gerarDocxCompleto, nomeArquivoDocx } from '../utils/docx';
 import { fraseConviteCadastrarContato, fraseTresCoisasAntesDeEnviar, frasePorQueImportaDiagnostico, rotuloSecaoContato } from '../utils/linguagemPerfil';
 
 export function Diagnostico() {
@@ -20,6 +21,18 @@ export function Diagnostico() {
   function baixarPdf() {
     const doc = gerarPdfCompleto(projeto!, dimensoes, prioridades);
     doc.save(nomeArquivoPdf(projeto!));
+  }
+
+  async function baixarDocx() {
+    const blob = await gerarDocxCompleto(projeto!, dimensoes, prioridades);
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = nomeArquivoDocx(projeto!);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   }
 
   function montarMensagem() {
@@ -88,11 +101,13 @@ export function Diagnostico() {
       <section className="card no-print">
         <h2 style={{ marginTop: 0, fontSize: '1.1rem' }}>Exportar e compartilhar</h2>
         <p className="help-text" style={{ marginTop: 0 }}>
-          O PDF traz tudo o que você escreveu em todos os blocos (Marco Zero, Arquitetura da Pesquisa,
-          Arquitetura do Texto, Referencial, Metodologia) e não só o resumo do Diagnóstico Final.
+          O PDF e o Word trazem tudo o que você escreveu em todos os blocos (Marco Zero, Arquitetura da
+          Pesquisa, Arquitetura do Texto, Referencial, Metodologia) e não só o resumo do Diagnóstico Final.
+          O Word (.docx) pode ser aberto e editado no Microsoft Word, LibreOffice ou Google Docs.
         </p>
         <div className="row">
           <button type="button" className="btn" onClick={baixarPdf}>Baixar PDF completo</button>
+          <button type="button" className="btn" onClick={baixarDocx}>Baixar Word (editável)</button>
           <button type="button" className="btn secondary" onClick={() => window.print()}>Imprimir</button>
         </div>
         <div style={{ marginTop: 16 }}>
