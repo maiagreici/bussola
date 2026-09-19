@@ -47,7 +47,8 @@ export function criarProjeto(
       estruturaProvisoria: [],
     },
     referencial: {
-      referencias: [],
+      textoReferencias: '',
+      reflexaoGeral: '',
       textoParaConferencia: '',
     },
     metodologia: {
@@ -84,16 +85,37 @@ export function criarProjeto(
  * de novo (para tirar aquele aviso) para a Regra 8 disparar sem necessidade
  * e marcar a Metodologia como "precisa revisão" (vermelho) mesmo com tudo
  * preenchido corretamente.
+ *
+ * Também migra projetos salvos antes do Referencial virar um bloco único de
+ * colagem: converte a antiga lista estruturada (referencias: Referencia[])
+ * em texto, uma referência por linha, preservando os dados já digitados.
  */
 export function normalizarProjeto(p: ResearchProject): ResearchProject {
   const ap = p.arquiteturaPesquisa;
   const m = p.metodologia;
+  const ref = p.referencial as ResearchProject['referencial'] & {
+    referencias?: { autor: string; ano: string; titulo: string; porQueUso?: string }[];
+  };
+  const referenciasAntigas = ref.referencias;
+  const referencial =
+    typeof ref.textoReferencias === 'string'
+      ? { ...ref, referencias: undefined }
+      : {
+          textoReferencias: (referenciasAntigas ?? [])
+            .map((r) => [r.autor, r.ano ? `(${r.ano})` : '', r.titulo].filter(Boolean).join(' ').trim())
+            .filter(Boolean)
+            .join('\n'),
+          reflexaoGeral: (referenciasAntigas ?? []).map((r) => r.porQueUso).filter(Boolean).join('\n'),
+          textoParaConferencia: ref.textoParaConferencia ?? '',
+        };
+  delete (referencial as { referencias?: unknown }).referencias;
   return {
     ...p,
     arquiteturaPesquisa: {
       ...ap,
       ultimaPerguntaConfirmadaTexto: ap.ultimaPerguntaConfirmadaTexto ?? ap.perguntaPesquisa ?? '',
     },
+    referencial,
     metodologia: {
       ...m,
       delineamentosCustom: m.delineamentosCustom ?? [],

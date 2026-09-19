@@ -1,76 +1,37 @@
 import { useMemo } from 'react';
 import { useStore } from '../state/store';
-import { novoId } from '../state/factory';
 import { PageHeader } from '../components/PageHeader';
-import { TextField, TextAreaField, SelectField } from '../components/Field';
+import { TextAreaField } from '../components/Field';
 import { conferirBibliografia } from '../utils/bibliografia';
-import type { Referencia, TipoReferencia } from '../types/project';
-
-const TIPOS: { valor: TipoReferencia; rotulo: string }[] = [
-  { valor: 'fundacional', rotulo: 'Referência fundacional / clássica' },
-  { valor: 'contemporanea', rotulo: 'Literatura contemporânea' },
-  { valor: 'metodologica', rotulo: 'Referência metodológica' },
-  { valor: 'normativa', rotulo: 'Documento normativo' },
-  { valor: 'outra', rotulo: 'Outra' },
-];
-
-const ANO_ATUAL = new Date().getFullYear();
 
 export function Referencial() {
   const { projeto, atualizar } = useStore();
-  const refs = projeto?.referencial.referencias ?? [];
+  const ref = projeto?.referencial;
 
-  const conferencia = useMemo(
-    () => (projeto ? conferirBibliografia(projeto.referencial.textoParaConferencia, refs) : null),
-    [projeto, refs],
+  const totalReferencias = useMemo(
+    () => (ref ? ref.textoReferencias.split('\n').map((l) => l.trim()).filter(Boolean).length : 0),
+    [ref],
   );
 
-  if (!projeto) return null;
+  const conferencia = useMemo(
+    () => (projeto ? conferirBibliografia(projeto.referencial.textoParaConferencia, projeto.referencial.textoReferencias) : null),
+    [projeto],
+  );
 
-  function adicionar() {
-    const nova: Referencia = {
-      id: novoId(),
-      autor: '',
-      ano: '',
-      titulo: '',
-      tipo: 'contemporanea',
-      ideiaCentral: '',
-      porQueUso: '',
-      ehApud: false,
-      fonteOriginalDisponivel: 'nao_se_aplica',
-    };
-    atualizar((p) => ({ ...p, referencial: { ...p.referencial, referencias: [...p.referencial.referencias, nova] } }));
-  }
-
-  function atualizarRef(id: string, patch: Partial<Referencia>) {
-    atualizar((p) => ({
-      ...p,
-      referencial: {
-        ...p.referencial,
-        referencias: p.referencial.referencias.map((r) => (r.id === id ? { ...r, ...patch } : r)),
-      },
-    }));
-  }
-
-  function removerRef(id: string) {
-    atualizar((p) => ({
-      ...p,
-      referencial: { ...p.referencial, referencias: p.referencial.referencias.filter((r) => r.id !== id) },
-    }));
-  }
+  if (!projeto || !ref) return null;
 
   return (
     <div>
       <PageHeader
         eyebrow="Bloco 3"
         titulo="Referencial Teórico"
-        oQueVerificamos="Quantidade, pertinência, atualidade, função e rastreabilidade das referências que sustentam sua discussão."
-        porQueImporta="Referências decorativas (citadas sem função clara) enfraquecem a fundamentação. Toda referência central precisa justificar sua presença."
+        oQueVerificamos="Quantidade, pertinência e rastreabilidade das referências que sustentam sua discussão."
+        porQueImporta="Referências decorativas (citadas sem função clara) enfraquecem a fundamentação. O conjunto de referências precisa justificar sua presença."
       />
 
       <div className="card">
         <p>
-          Você tem <strong>{refs.length}</strong> referência(s) cadastrada(s).
+          Você tem <strong>{totalReferencias}</strong> referência(s) coladas.
         </p>
         <p className="help-text">
           Dez referências costuma ser um ponto de partida inicial razoável, mas a quantidade necessária
@@ -78,69 +39,23 @@ export function Referencial() {
         </p>
       </div>
 
-      <div className="stack">
-        {refs.map((r) => {
-          const antiga = r.ano && ANO_ATUAL - parseInt(r.ano, 10) > 15;
-          return (
-            <div className="card" key={r.id}>
-              <div className="row">
-                <div style={{ flex: 2, minWidth: 220 }}>
-                  <TextField label="Autor(es)" value={r.autor} onChange={(v) => atualizarRef(r.id, { autor: v })} />
-                </div>
-                <div style={{ flex: 1, minWidth: 100 }}>
-                  <TextField label="Ano" value={r.ano} onChange={(v) => atualizarRef(r.id, { ano: v })} />
-                </div>
-              </div>
-              <TextField label="Título" value={r.titulo} onChange={(v) => atualizarRef(r.id, { titulo: v })} />
-              <SelectField
-                label="Classificação"
-                value={r.tipo}
-                onChange={(v) => atualizarRef(r.id, { tipo: v as TipoReferencia })}
-                opcoes={TIPOS}
-              />
-              {antiga && (
-                <p className="help-text">
-                  Esta referência tem mais de 15 anos: ela é antiga porque é fundamental para o campo, ou
-                  porque sua busca bibliográfica precisa ser atualizada? (Clássico necessário ≠ literatura
-                  desatualizada por ausência de busca recente.)
-                </p>
-              )}
-              <TextAreaField
-                label="Ideia central deste texto *"
-                value={r.ideiaCentral}
-                onChange={(v) => atualizarRef(r.id, { ideiaCentral: v })}
-                rows={2}
-              />
-              <TextAreaField
-                label="Por que estou usando este texto na minha pesquisa? *"
-                value={r.porQueUso}
-                onChange={(v) => atualizarRef(r.id, { porQueUso: v })}
-                rows={2}
-              />
-              <label style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 10 }}>
-                <input type="checkbox" checked={r.ehApud} onChange={(e) => atualizarRef(r.id, { ehApud: e.target.checked })} />
-                É uma citação de citação (apud)
-              </label>
-              {r.ehApud && (
-                <SelectField
-                  label="É possível acessar a fonte original?"
-                  value={r.fonteOriginalDisponivel ?? ''}
-                  onChange={(v) => atualizarRef(r.id, { fonteOriginalDisponivel: v as Referencia['fonteOriginalDisponivel'] })}
-                  opcoes={[
-                    { valor: 'sim', rotulo: 'Sim — devo preferir a fonte original' },
-                    { valor: 'nao', rotulo: 'Não consegui acessar' },
-                  ]}
-                />
-              )}
-              <button type="button" className="btn ghost" onClick={() => removerRef(r.id)}>Remover referência</button>
-            </div>
-          );
-        })}
+      <div className="card">
+        <TextAreaField
+          label="Cole aqui sua lista de referências (uma por linha)"
+          help="Cole a lista que você já tem pronta (do Word, Mendeley, Zotero etc.), uma referência por linha. Não precisa reformatar nada — o sistema reconhece automaticamente autor e ano quando possível, para usar na conferência abaixo."
+          value={ref.textoReferencias}
+          onChange={(v) => atualizar((p) => ({ ...p, referencial: { ...p.referencial, textoReferencias: v } }))}
+          rows={10}
+          placeholder={'SILVA, J. Título do texto. Editora, 2020.\nCOSTA, M. (2019). Outro título aqui.'}
+        />
+        <TextAreaField
+          label="Por que essas referências sustentam sua pesquisa?"
+          help="Este não é um gerador de trabalho acadêmico — a ferramenta não escreve isso por você. É uma reflexão rápida e única sobre o conjunto: o que essas referências, juntas, dão de sustentação para a sua pergunta e seus objetivos."
+          value={ref.reflexaoGeral}
+          onChange={(v) => atualizar((p) => ({ ...p, referencial: { ...p.referencial, reflexaoGeral: v } }))}
+          rows={4}
+        />
       </div>
-
-      <button type="button" className="btn secondary" style={{ marginTop: 12 }} onClick={adicionar}>
-        + Adicionar referência
-      </button>
 
       <section className="card" style={{ marginTop: 20 }}>
         <h2 style={{ marginTop: 0, fontSize: '1.1rem' }}>Conferência bibliográfica bidirecional</h2>
@@ -160,7 +75,7 @@ export function Referencial() {
             <ResultadoBloco titulo="Citações no texto sem referência correspondente" itens={conferencia.citacoesSemReferencia} />
             <ResultadoBloco titulo="Referências que não parecem citadas no texto colado" itens={conferencia.referenciasNaoCitadas} />
             <ResultadoBloco titulo="Possíveis duplicidades" itens={conferencia.possiveisDuplicidades} />
-            <ResultadoBloco titulo="Dados bibliográficos incompletos" itens={conferencia.dadosIncompletos} />
+            <ResultadoBloco titulo="Linhas sem autor/ano reconhecido" itens={conferencia.dadosIncompletos} />
           </div>
         )}
       </section>

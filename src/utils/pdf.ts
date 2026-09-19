@@ -65,6 +65,21 @@ export function gerarPdfCompleto(
     escreverParagrafo(valor?.trim() ? valor.trim() : NAO_PREENCHIDO, 10.5, false, 8);
   }
 
+  function campoMultilinha(rotulo: string, valor: string | undefined | null) {
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10.5);
+    novaPaginaSeNecessario(15);
+    doc.text(rotulo, margemEsquerda, y);
+    y += 14;
+    const linhas = (valor ?? '').split('\n').map((l) => l.trim()).filter(Boolean);
+    if (linhas.length === 0) {
+      escreverParagrafo(NAO_PREENCHIDO, 10.5, false, 8);
+      return;
+    }
+    linhas.forEach((linha) => escreverParagrafo(linha, 10.5, false, 2));
+    y += 6;
+  }
+
   function escreverArvore(nos: NoArvore[], nivel: number) {
     nos.forEach((no) => {
       const indentar = nivel * 16;
@@ -147,15 +162,8 @@ export function gerarPdfCompleto(
 
   // Bloco 3
   tituloSecao('Bloco 3 — Referencial Teórico');
-  if (p.referencial.referencias.length === 0) {
-    escreverParagrafo(NAO_PREENCHIDO, 10.5, false, 8);
-  } else {
-    p.referencial.referencias.forEach((r, i) => {
-      escreverParagrafo(`${i + 1}. ${r.autor || '(autor não informado)'} (${r.ano || 's.d.'}) — ${r.titulo || '(sem título)'}`, 10.5, true, 2);
-      escreverParagrafo(`Ideia central: ${r.ideiaCentral || NAO_PREENCHIDO}`, 10, false, 2);
-      escreverParagrafo(`Por que uso: ${r.porQueUso || NAO_PREENCHIDO}`, 10, false, 8);
-    });
-  }
+  campoMultilinha('Referências (coladas pelo estudante)', p.referencial.textoReferencias);
+  campo('Por que essas referências sustentam a pesquisa', p.referencial.reflexaoGeral);
 
   // Bloco 4
   tituloSecao('Bloco 4 — Metodologia');

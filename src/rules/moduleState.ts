@@ -58,10 +58,9 @@ export function estadoArquiteturaTexto(p: ResearchProject): EstadoModulo {
 }
 
 export function estadoReferencial(p: ResearchProject): EstadoModulo {
-  const refs = p.referencial.referencias;
-  if (refs.length === 0) return 'nao_iniciado';
-  const completo = refs.every((r) => r.ideiaCentral.trim() && r.porQueUso.trim());
-  return completo ? 'concluido' : 'em_andamento';
+  const linhas = p.referencial.textoReferencias.split('\n').map((l) => l.trim()).filter(Boolean);
+  if (linhas.length === 0) return 'nao_iniciado';
+  return p.referencial.reflexaoGeral.trim() ? 'concluido' : 'em_andamento';
 }
 
 export function estadoMetodologia(p: ResearchProject): EstadoModulo {

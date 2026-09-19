@@ -72,10 +72,12 @@ export function diagnosticarProjeto(p: ResearchProject): { dimensoes: DimensaoDi
     chave: 'referencial',
     nome: 'Referencial teórico',
     estado: estadoRef === 'concluido' ? 'verde' : estadoRef === 'nao_iniciado' ? 'vermelho' : 'amarelo',
-    criterio: 'Cada referência central possui ideia central e justificativa de uso registradas.',
+    criterio: 'Há uma lista de referências colada e uma justificativa de como esse conjunto sustenta a pesquisa.',
   });
   if (estadoRef === 'nao_iniciado') {
-    prioridades.push({ titulo: 'Cadastre suas referências centrais', explicacao: 'Sem referências registradas, não é possível avaliar a fundamentação teórica.', impacto: 2 });
+    prioridades.push({ titulo: 'Cole suas referências centrais', explicacao: 'Sem referências registradas, não é possível avaliar a fundamentação teórica.', impacto: 2 });
+  } else if (estadoRef === 'em_andamento') {
+    prioridades.push({ titulo: 'Explique por que essas referências sustentam sua pesquisa', explicacao: 'A lista de referências está colada, mas falta a reflexão sobre por que esse conjunto sustenta a pesquisa.', impacto: 2 });
   }
 
   // 5. Metodologia
@@ -107,10 +109,10 @@ export function diagnosticarProjeto(p: ResearchProject): { dimensoes: DimensaoDi
   }
 
   // 7. Referências (conferência bibliográfica)
-  const refs = p.referencial.referencias;
-  const conf = conferirBibliografia(p.referencial.textoParaConferencia, refs);
+  const linhasRef = p.referencial.textoReferencias.split('\n').map((l) => l.trim()).filter(Boolean);
+  const conf = conferirBibliografia(p.referencial.textoParaConferencia, p.referencial.textoReferencias);
   const problemasRef = conf.citacoesSemReferencia.length + conf.dadosIncompletos.length;
-  if (refs.length === 0) {
+  if (linhasRef.length === 0) {
     dimensoes.push({ chave: 'referencias', nome: 'Referências (conferência)', estado: 'vermelho', criterio: 'Nenhuma referência cadastrada para conferência.' });
   } else if (problemasRef > 0) {
     dimensoes.push({ chave: 'referencias', nome: 'Referências (conferência)', estado: 'vermelho', criterio: 'Há citações sem referência correspondente ou dados incompletos.' });

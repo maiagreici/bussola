@@ -38,25 +38,6 @@ export interface ObjetivoEspecifico {
   resultadoEsperado: string;
 }
 
-export type TipoReferencia =
-  | 'fundacional'
-  | 'contemporanea'
-  | 'metodologica'
-  | 'normativa'
-  | 'outra';
-
-export interface Referencia {
-  id: string;
-  autor: string;
-  ano: string;
-  titulo: string;
-  tipo: TipoReferencia;
-  ideiaCentral: string;
-  porQueUso: string;
-  fonteOriginalDisponivel?: 'sim' | 'nao' | 'nao_se_aplica'; // para casos de apud
-  ehApud: boolean;
-}
-
 export interface NoArvore {
   id: string;
   titulo: string;
@@ -122,7 +103,10 @@ export interface ArquiteturaTextoState {
 }
 
 export interface ReferencialState {
-  referencias: Referencia[];
+  /** Bloco único colado pelo estudante: uma referência por linha. */
+  textoReferencias: string;
+  /** Reflexão única (não mais por referência) sobre por que o conjunto de referências sustenta a pesquisa. */
+  reflexaoGeral: string;
   textoParaConferencia: string; // texto colado pelo usuário p/ checagem bidirecional
 }
 

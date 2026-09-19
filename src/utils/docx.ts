@@ -64,6 +64,18 @@ export async function gerarDocxCompleto(
     paragrafos.push(new Paragraph({ children: [new TextRun({ text: texto, bold: true })], spacing: { before: 100, after: 60 } }));
   }
 
+  function campoMultilinha(rotulo: string, valor: string | undefined | null) {
+    tituloCampo(rotulo);
+    const linhas = (valor ?? '').split('\n').map((l) => l.trim()).filter(Boolean);
+    if (linhas.length === 0) {
+      paragrafoSimples(NAO_PREENCHIDO, true);
+      return;
+    }
+    linhas.forEach((linha) => {
+      paragrafos.push(new Paragraph({ children: [new TextRun({ text: linha })], spacing: { after: 40 } }));
+    });
+  }
+
   function itensArvore(nos: NoArvore[], nivel: number) {
     nos.forEach((no) => {
       paragrafos.push(
@@ -132,20 +144,8 @@ export async function gerarDocxCompleto(
 
   // Bloco 3
   tituloSecao('Bloco 3 — Referencial Teórico');
-  if (p.referencial.referencias.length === 0) {
-    paragrafoSimples(NAO_PREENCHIDO, true);
-  } else {
-    p.referencial.referencias.forEach((r, i) => {
-      paragrafos.push(
-        new Paragraph({
-          children: [new TextRun({ text: `${i + 1}. ${r.autor || '(autor não informado)'} (${r.ano || 's.d.'}) — ${r.titulo || '(sem título)'}`, bold: true })],
-          spacing: { after: 20 },
-        }),
-      );
-      paragrafoSimples(`Ideia central: ${r.ideiaCentral || NAO_PREENCHIDO}`);
-      paragrafoSimples(`Por que uso: ${r.porQueUso || NAO_PREENCHIDO}`);
-    });
-  }
+  campoMultilinha('Referências (coladas pelo estudante)', p.referencial.textoReferencias);
+  campo('Por que essas referências sustentam a pesquisa', p.referencial.reflexaoGeral);
 
   // Bloco 4
   tituloSecao('Bloco 4 — Metodologia');
